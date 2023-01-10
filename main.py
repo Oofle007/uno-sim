@@ -53,30 +53,21 @@ def create_deck():
 def find_playable_cards(current_player=None, cc=None, single_card=None):
     playable_cards = []
     # Finding playable cards
+    attributes = ['color', 'number', 'special_description']
     if current_player:
-        for c in current_player.cards:
-            if c.color is cc.color and cc.color is not None:
-                playable_cards.append(c)
-                continue
-            if c.number is cc.number and cc.number is not None:
-                playable_cards.append(c)
-                continue
-            if c.special_description is cc.special_description and c.special_description is not None:
-                playable_cards.append(c)
-                continue
-            if c.special_description == "wild" or c.special_description == "+4":
-                playable_cards.append(c)
-                continue
+        for c in current_player.cards:  # Iterates over all of the current player's cards
+            for i in range(0, len(attributes)):  # Iterates through all attributes
+                i = attributes[i]
+                if getattr(c, i) is getattr(cc, i) and getattr(cc, i) is not None:
+                    playable_cards.append(c)
+                    continue
         return playable_cards
     else:
-        if single_card.color is cc.color and cc.color is not None:
-            playable_cards.append(single_card)
-        if single_card.number is cc.number and cc.number is not None:
-            playable_cards.append(single_card)
-        if single_card.special_description is cc.special_description and single_card.special_description is not None:
-            playable_cards.append(single_card)
-        if single_card.special_description == "wild" or single_card.special_description == "+4":
-            playable_cards.append(single_card)
+        for i in range(0, len(attributes)):  # Iterates through all attributes
+            i = attributes[i]
+            if getattr(single_card, i) is getattr(cc, i) and getattr(single_card, i) is not None:
+                playable_cards.append(single_card)
+                continue
         return len(playable_cards) == 0
 
 
@@ -99,8 +90,6 @@ def play_one_game(no_players):
     while cc.special_description:
         cc = deck[0]
         del deck[0]
-        if len(deck) == 0:
-            create_deck()
     while not stop:
         current_player = players[current_player_index]  # Setting current player
         playable_cards = find_playable_cards(current_player, cc)
@@ -138,13 +127,13 @@ def play_one_game(no_players):
             del current_player.cards[current_player.cards.index(cc)]
             if len(current_player.cards) == 0:  # If game is over:
                 break
-            # Doing all special cards
+            # Playing special card
             if cc.special_description == "skip":  # Skip
                 if direction == "right":
                     current_player_index += 1
                     if current_player_index >= no_players:
                         current_player_index = 0
-                if direction == "left":
+                else:
                     current_player_index -= 1
                     if current_player_index < 0:
                         current_player_index = no_players - 1
@@ -164,12 +153,10 @@ def play_one_game(no_players):
                     temp_current_player_index += 1
                     if temp_current_player_index > no_players - 1:
                         temp_current_player_index = 0
-                if direction == "left":
+                else:
                     temp_current_player_index -= 1
                     if temp_current_player_index < 0:
                         temp_current_player_index = no_players - 1
-                if len(deck) == 0:
-                    create_deck()
                 for i in range(4):  # Giving next player 4 cards
                     players[temp_current_player_index].cards.append(deck[0])
                     del deck[0]
@@ -180,7 +167,7 @@ def play_one_game(no_players):
                     current_player_index += 1
                     if current_player_index >= no_players:
                         current_player_index = 0
-                if direction == "left":
+                else:
                     current_player_index -= 1
                     if current_player_index < 0:
                         current_player_index = no_players - 1
@@ -190,12 +177,10 @@ def play_one_game(no_players):
                     temp_current_player_index += 1
                     if temp_current_player_index > no_players - 1:
                         temp_current_player_index = 0
-                if direction == "left":
+                else:
                     temp_current_player_index -= 1
                     if temp_current_player_index < 0:
                         temp_current_player_index = no_players - 1
-                if len(deck) == 0:
-                    create_deck()
                 for i in range(2):
                     players[temp_current_player_index].cards.append(deck[0])
                     del deck[0]
@@ -206,14 +191,12 @@ def play_one_game(no_players):
                     current_player_index += 1
                     if current_player_index >= no_players:
                         current_player_index = 0
-                if direction == "left":
+                else:
                     current_player_index -= 1
                     if current_player_index < 0:
                         current_player_index = no_players - 1
         else:  # You don't have a card to play
             no_times_drew = 1
-            if len(deck) == 0:
-                create_deck()
             while find_playable_cards(cc=cc, single_card=deck[0]):  # While you can't play the card you drew
                 no_times_drew += 1
                 current_player.cards.append(deck[0])
@@ -230,7 +213,7 @@ def play_one_game(no_players):
             current_player_index += 1
             if current_player_index >= no_players:
                 current_player_index = 0
-        if direction == "left":
+        else:
             current_player_index -= 1
             if current_player_index < 0:
                 current_player_index = no_players-1
@@ -244,8 +227,7 @@ def simulate(no_players, no_games):
     return "Average Number Of Turns: {}".format(round(statistics.mean(all_games)))
 
 
-create_deck()
-print(simulate(4, 100))
+print(simulate(4, 1000))
 
 # This project follows the official UNO game rules (Which means no stacking +2/+4s), and is optimised to play the
 # theoretical best move.
